@@ -25,6 +25,13 @@ MODEL = "gpt-5-mini"
 print("Setup complete — Langfuse client initialised")
 print(f"Traces will appear at: {LANGFUSE_BASE_URL}")
 
+EXPECTED_FACTS = {
+    "What is your return policy?": ["30", "unworn", "tag"],
+    "What is your refund method?": ["original", "5", "7"],
+    "What are your customer support hours?": ["monday", "friday", "9", "6"],
+    "Do you offer free shipping?": ["75"],
+}
+
 @observe(name="chatbot")
 def ask_bot(user_message: str) -> str:
     properties = {"feature": "bot", "channel": "cli"}
@@ -46,7 +53,21 @@ def ask_bot(user_message: str) -> str:
                 {"role": "user", "content": user_message},
             ],
         )
-    return response.choices[0].message.content
+    answer = response.choices[0].message.content or ""
+
+    expected = EXPECTED_FACTS[user_message]
+    score = sum(
+        fact in answer.lower() for fact in expected
+    ) / len(expected)
+
+    langfuse.score_current_trace(
+        name="policy_fact_coverage",
+        value=float(score),
+        data_type="NUMERIC",
+        comment="Automated keyword-based policy fact coverage",
+    )
+
+    return answer
 
 ask_bot("What is your return policy?")
 ask_bot("What is your refund method?")
