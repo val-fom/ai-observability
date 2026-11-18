@@ -12,7 +12,7 @@ from langfuse import Langfuse
 sys.path.append(os.path.abspath(".."))
 from shared.shopbot_config import SHOPBOT_SYSTEM_PROMPT
 
-load_dotenv(".env")
+load_dotenv(".env",override=True)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI()
@@ -25,7 +25,7 @@ MODEL = "gpt-5-mini"
 print("Setup complete — Langfuse client initialised")
 print(f"Traces will appear at: {LANGFUSE_BASE_URL}")
 
-@observe(name="chatbot", tags=["shopbot", "support"], type="function")
+@observe(name="chatbot")
 def ask_bot(user_message: str) -> str:
     properties = {"feature": "bot", "channel": "cli"}
 
