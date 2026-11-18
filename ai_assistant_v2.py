@@ -89,8 +89,19 @@ def evaluate_answer(question: str, answer: str, expected_behavior: str) -> dict:
             },
         ],
         response_format=EVALUATION_SCHEMA,
-        max_completion_tokens=350,
+        max_completion_tokens=1200,
     )
+    
+    choice = response.choices[0]
+    usage = response.usage
+
+    print("Judge finish reason:", choice.finish_reason)
+    print("Completion tokens:", usage.completion_tokens)
+    print(
+        "Reasoning tokens:",
+        usage.completion_tokens_details.reasoning_tokens
+    )
+    
     content = response.choices[0].message.content
     if not content:
         raise RuntimeError("Judge returned empty content; check finish_reason/token limit")
